@@ -1,4 +1,4 @@
-# websocket-jsonpc2
+# noice-json-rpc
 Client and Server classes to implement a jsonrpc2 protocol over websockets
 
 
