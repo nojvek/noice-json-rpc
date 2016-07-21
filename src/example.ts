@@ -1,4 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
+
 import * as fs from 'fs'
 import * as WebSocket from 'ws'
 import WebSocketServer = WebSocket.Server
@@ -8,7 +9,7 @@ import * as rpc from './noice-json-rpc'
 
 async function setupClient() {
     try {
-        const api: Crdp.CrdiClient = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
+        const api: Crdp.CrdpClient = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
 
         await Promise.all([
             api.Runtime.enable(),
@@ -28,7 +29,7 @@ async function setupClient() {
 
 function setupServer() {
     const wssServer = new WebSocketServer({port: 8080});
-    const api: Crdp.CrdiServer = new rpc.Server(wssServer).api();
+    const api: Crdp.CrdpServer = new rpc.Server(wssServer).api();
 
     const enable = () => {}
 
@@ -46,7 +47,7 @@ function setupServer() {
             }, 1000)
         },
         stop() {
-            const response: Crdi.Profiler.StopResponse = {
+            const response: Crdp.Profiler.StopResponse = {
                 profile: {
                     head: null,
                     startTime: 0,

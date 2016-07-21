@@ -6,6 +6,7 @@
         "sourceMap": false,
         "target": "ES6",
         "outDir": "../lib",
+        "declaration": true,
         "moduleResolution": "node"
     }
 }

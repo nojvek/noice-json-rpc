@@ -6,7 +6,8 @@
   "typings": "lib/noice-json-rpc.d.ts",
   "files": ["lib"],
   "scripts": {
-    "build": "tsc -p src"
+    "build": "tsc -p src",
+    "clean": "rm -rf lib"
   },
   "repository": {
     "type": "git",
@@ -30,9 +31,8 @@
     "url": "https://github.com/nojvek/noice-json-rpc/issues"
   },
   "homepage": "https://github.com/nojvek/noice-json-rpc#readme",
-  "dependencies": {
+  "devDependencies": {
     "chrome-remote-debug-protocol": "^1.0.1",
-    "promisify-node": "^0.4.0",
     "ws": "^1.1.1"
   }
 }
