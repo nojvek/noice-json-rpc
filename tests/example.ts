@@ -5,7 +5,7 @@ import * as WebSocket from 'ws'
 import WebSocketServer = WebSocket.Server
 import * as http from 'http'
 import Crdp from 'chrome-remote-debug-protocol'
-import * as rpc from './noice-json-rpc'
+import * as rpc from '../lib/noice-json-rpc'
 
 async function setupClient() {
     try {
@@ -60,5 +60,5 @@ function setupServer() {
 
 }
 
-setupServer()
-setupClient()
+//setupServer()
+//setupClient()

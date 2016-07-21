@@ -1,17 +1,18 @@
+/// <reference path="../typings/index.d.ts" />
 import { JsonRpc2 } from './json-rpc2';
 import { EventEmitter } from 'events';
 export interface LikeSocket {
     send(message: string): void;
-    on(event: string, cb: Function): this;
-    removeListener(event: string, cb: Function): this;
-    on(event: 'open', cb: (ws: LikeSocket) => void): this;
-    on(event: 'message', cb: (data: string) => void): this;
-    on(event: 'error', cb: (err: Error) => void): this;
+    on(event: string, cb: Function): any;
+    removeListener(event: string, cb: Function): any;
+    on(event: 'open', cb: (ws: LikeSocket) => void): any;
+    on(event: 'message', cb: (data: string) => void): any;
+    on(event: 'error', cb: (err: Error) => void): any;
 }
 export interface LikeSocketServer {
-    on(event: string, cb: Function): this;
-    on(event: 'connection', cb: (ws: LikeSocket) => void): this;
-    on(event: 'error', cb: (err: Error) => void): this;
+    on(event: string, cb: Function): any;
+    on(event: 'connection', cb: (ws: LikeSocket) => void): any;
+    on(event: 'error', cb: (err: Error) => void): any;
     clients?: LikeSocket[];
 }
 export interface LogOpts {

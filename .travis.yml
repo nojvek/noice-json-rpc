@@ -1,11 +1,10 @@
 language: node_js
 
 node_js:
-    - "node"
+    - node
 
 install:
     - npm install -g typescript@next
-    - npm install -g mocha
     - npm install -g typings
     - typings install
     - npm install
@@ -15,4 +14,7 @@ before_script:
 
 script:
     - npm run build
-    - npm run test
+    - npm test
+
+after_success:
+    - npm run coveralls

@@ -9,8 +9,10 @@
   ],
   "scripts": {
     "build": "tsc -p src",
-    "clean": "rm -rf lib",
-    "test": "echo 'test'"
+    "clean": "rm -rf lib && rm -rf test",
+    "pretest": "tsc -p tests",
+    "test": "istanbul cover node_modules/.bin/_mocha -- -R landing out/*.test.js",
+    "coveralls": "cat coverage/lcov.info | node_modules/.bin/coveralls"
   },
   "repository": {
     "type": "git",
@@ -37,6 +39,8 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chrome-remote-debug-protocol": "^1.0.1",
+    "coveralls": "^2.11.11",
+    "mocha": "^2.5.3",
     "ws": "^1.1.1"
   }
 }

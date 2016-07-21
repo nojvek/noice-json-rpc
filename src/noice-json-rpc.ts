@@ -1,20 +1,22 @@
+/// <reference path="../typings/index.d.ts" />
+
 import {JsonRpc2} from './json-rpc2'
 import {EventEmitter} from 'events'
 
 export interface LikeSocket {
     send(message: string): void
-    on(event: string, cb: Function): this;
-    removeListener(event: string, cb: Function): this;
+    on(event: string, cb: Function): any;
+    removeListener(event: string, cb: Function): any;
 
-    on(event: 'open', cb: (ws: LikeSocket) => void ): this
-    on(event: 'message', cb: (data: string) => void): this;
-    on(event: 'error', cb: (err: Error) => void ): this
+    on(event: 'open', cb: (ws: LikeSocket) => void ): any
+    on(event: 'message', cb: (data: string) => void): any;
+    on(event: 'error', cb: (err: Error) => void ): any
 }
 
 export interface LikeSocketServer {
-    on(event: string, cb: Function): this;
-    on(event: 'connection', cb: (ws: LikeSocket) => void ): this
-    on(event: 'error', cb: (err: Error) => void ): this
+    on(event: string, cb: Function): any;
+    on(event: 'connection', cb: (ws: LikeSocket) => void ): any
+    on(event: 'error', cb: (err: Error) => void ): any
     clients?: LikeSocket[]
 }
 
@@ -51,6 +53,10 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     constructor(socket: LikeSocket, opts?: ClientOpts){
         super()
         this.setLogging(opts)
+
+        if (!socket) {
+            throw new TypeError("socket cannot be undefined or null")
+        }
 
         this._connectedPromise = new Promise((resolve, reject) => {
             this._socket = socket
@@ -192,6 +198,12 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     constructor (server: LikeSocketServer, opts?:ServerOpts) {
         super()
         this.setLogging(opts)
+
+        if (!server) {
+            throw new TypeError("server cannot be undefined or null")
+        }
+
+
         this._socketServer = server
         server.on('error', (e) => this.emit('error', e))
 

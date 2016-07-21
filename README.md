@@ -1,5 +1,8 @@
 # Noice Json Rpc
-[![build status](https://travis-ci.org/nojvek/noice-json-rpc.svg?branch=master)](https://travis-ci.org/nojvek/noice-json-rpc)
+[![Build Status](https://travis-ci.org/nojvek/noice-json-rpc.svg?branch=master)](https://travis-ci.org/nojvek/noice-json-rpc)
+[![Coverage Status](https://coveralls.io/repos/github/nojvek/noice-json-rpc/badge.svg?branch=master)](https://coveralls.io/github/nojvek/noice-json-rpc?branch=master)
+[![npm version](https://badge.fury.io/js/noice-json-rpc.svg)](https://badge.fury.io/js/noice-json-rpc)
+
 
 Client and Server helpers to implement a clean function based Api for Json Rpc.
 
