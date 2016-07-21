@@ -1,20 +1,10 @@
 import {LikeSocket, LikeSocketServer} from '../lib/noice-json-rpc'
+import {EventEmitter} from 'events'
 
-export class MockSocket implements LikeSocket {
+export class MockSocket extends EventEmitter implements LikeSocket {
     send(message: string) {
-    }
-
-    on(event: string, cb: Function) {
-    }
-
-    removeListener(event: string, cb: Function) {
     }
 }
 
-export class MockSocketServer implements LikeSocketServer {
-    on(event: string, cb: Function) {
-    }
-
-    removeListener(event: string, cb: Function) {
-    }
+export class MockSocketServer extends EventEmitter implements LikeSocketServer {
 }
