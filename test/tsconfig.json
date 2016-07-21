@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "sourceMap": false,
+        "target": "ES6",
+        "outDir": "../out",
+        "declaration": false,
+        "moduleResolution": "node"
+    }
+}
