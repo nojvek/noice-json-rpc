@@ -10,13 +10,11 @@ export interface LikeSocket {
 
     on(event: 'open', cb: (ws: LikeSocket) => void ): any
     on(event: 'message', cb: (data: string) => void): any;
-    on(event: 'error', cb: (err: Error) => void ): any
 }
 
 export interface LikeSocketServer {
     on(event: string, cb: Function): any;
     on(event: 'connection', cb: (ws: LikeSocket) => void ): any
-    on(event: 'error', cb: (err: Error) => void ): any
     clients?: LikeSocket[]
 }
 
@@ -41,14 +39,13 @@ export interface ServerOpts extends LogOpts {
  * It just needs to pass in an object that implements LikeSocket interface
  */
 export class Client extends EventEmitter implements JsonRpc2.Client{
-    private static ConnectTimeout = 5000
-
-    private _connectedPromise: Promise<Client>
     private _socket: LikeSocket
-    private _pendingMessageMap: Map<number, {resolve: Function, reject: Function}> = new Map()
+    private _responsePromiseMap: Map<number, {resolve: Function, reject: Function}> = new Map()
     private _nextMessageId: number = 0
-    private _emitLog: boolean = false;
-    private _consoleLog: boolean = false;
+    private _connected: boolean = false
+    private _emitLog: boolean = false
+    private _consoleLog: boolean = false
+    private _requestQueue: string[] = []
 
     constructor(socket: LikeSocket, opts?: ClientOpts){
         super()
@@ -58,20 +55,12 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
             throw new TypeError("socket cannot be undefined or null")
         }
 
-        this._connectedPromise = new Promise((resolve, reject) => {
-            this._socket = socket
-
-            socket.on('error', reject)
-            socket.on('open', () => {
-                // Replace the promise-rejecting handler
-                socket.removeListener('error', reject)
-                socket.on('error', e => this.emit('error', e))
-                resolve(this)
-            })
-
-            socket.on('close', () => this.emit('close'))
-            socket.on('message', message => this.processMessage(message))
+        this._socket = socket
+        socket.on('open', () => {
+            this._connected = true
+            this._sendQueuedRequests()
         })
+        socket.on('message', message => this.processMessage(message))
     }
 
     public processMessage(messageStr: string) {
@@ -89,9 +78,9 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
         if (!message){
             this.emit('error', new Error(`Malformed message: ${messageStr}`))
         } else if (message.id) {
-            if (this._pendingMessageMap.has(message.id)) {
+            if (this._responsePromiseMap.has(message.id)) {
                 // Resolve promise from pending message
-                const promise = this._pendingMessageMap.get(message.id)
+                const promise = this._responsePromiseMap.get(message.id)
                 if (message.result) {
                     promise.resolve(message.result)
                 } else if (message.error) {
@@ -115,9 +104,17 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     }
 
     private _send(message: JsonRpc2.Notification | JsonRpc2.Request) {
-        const messsageStr = JSON.stringify(message)
-        this._logMessage(messsageStr, "send")
-        this._socket.send(messsageStr)
+        this._requestQueue.push(JSON.stringify(message))
+        this._sendQueuedRequests()
+    }
+
+    private _sendQueuedRequests() {
+        if (this._connected) {
+            for (let messageStr in this._requestQueue) {
+                this._logMessage(messageStr, "send")
+                this._socket.send(messageStr)
+            }
+        }
     }
 
     private _logMessage(message: string, direction: "send" | "receive") {
@@ -135,8 +132,8 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
         const message: JsonRpc2.Request = {id, method, params}
 
         return new Promise((resolve, reject) => {
-            this._pendingMessageMap.set(id, {resolve, reject})
-            this._connectedPromise.then(() => this._send(message))
+            this._responsePromiseMap.set(id, {resolve, reject})
+            this._send(message)
         })
     }
 
@@ -203,10 +200,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
             throw new TypeError("server cannot be undefined or null")
         }
 
-
         this._socketServer = server
-        server.on('error', (e) => this.emit('error', e))
-
         server.on('connection', socket => {
             socket.on('message', message => this.processMessage(message, socket))
         })

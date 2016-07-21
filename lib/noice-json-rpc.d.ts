@@ -7,12 +7,10 @@ export interface LikeSocket {
     removeListener(event: string, cb: Function): any;
     on(event: 'open', cb: (ws: LikeSocket) => void): any;
     on(event: 'message', cb: (data: string) => void): any;
-    on(event: 'error', cb: (err: Error) => void): any;
 }
 export interface LikeSocketServer {
     on(event: string, cb: Function): any;
     on(event: 'connection', cb: (ws: LikeSocket) => void): any;
-    on(event: 'error', cb: (err: Error) => void): any;
     clients?: LikeSocket[];
 }
 export interface LogOpts {
@@ -32,18 +30,19 @@ export interface ServerOpts extends LogOpts {
  * It just needs to pass in an object that implements LikeSocket interface
  */
 export declare class Client extends EventEmitter implements JsonRpc2.Client {
-    private static ConnectTimeout;
-    private _connectedPromise;
     private _socket;
-    private _pendingMessageMap;
+    private _responsePromiseMap;
     private _nextMessageId;
+    private _connected;
     private _emitLog;
     private _consoleLog;
+    private _requestQueue;
     constructor(socket: LikeSocket, opts?: ClientOpts);
     processMessage(messageStr: string): boolean;
     /** Set logging for all received and sent messages */
     setLogging({logEmit, logConsole}?: LogOpts): void;
     private _send(message);
+    private _sendQueuedRequests();
     private _logMessage(message, direction);
     call(method: string, params?: any): Promise<any>;
     notify(method: string, params?: any): void;

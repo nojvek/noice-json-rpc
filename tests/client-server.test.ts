@@ -1,16 +1,22 @@
 import {Client, Server} from '../lib/noice-json-rpc'
 import {MockSocket, MockSocketServer} from './client-server.mock'
-import * as sinon from 'sinon'
 import {assert} from 'chai'
+import * as sinon from 'sinon'
 
 //TODO: Get 100% test coverage.
 
 describe('Client', () => {
     let client: Client
     let socket: MockSocket
+    let sandbox: sinon.SinonSandbox
 
     beforeEach(() => {
+        sandbox = sinon.sandbox.create()
         socket = new MockSocket()
+    })
+
+    afterEach(() => {
+        sandbox.restore()
     })
 
     it('fails on null socket', ()=> {
@@ -45,16 +51,16 @@ describe('Client', () => {
 
     it('logs messages if logging options are passed', () => {
         // TODO: make call synchronous
-        // client = new Client(socket, {logConsole: true, logEmit: true})
-        // const emit = sinon.spy(client, 'emit')
-        // const log = sinon.spy(console, 'log')
-        // socket.emit('open')
-        // client.call('hello')
-        // process.nextTick(() => {
-        //     sinon.assert.calledOnce(emit)
-        //     sinon.assert.calledOnce(log)
-        //     done()
-        // })
+        client = new Client(socket, {logConsole: true, logEmit: true})
+        const logConsole = sandbox.stub(console, 'log')
+        const logEmit = sandbox.spy()
+
+        socket.emit('open')
+        client.on('send', logEmit)
+        client.call('hello')
+
+        assert(logEmit.calledOnce, "logEmit.calledOnce")
+        assert(logConsole.calledOnce, "logEmit.calledOnce")
     })
 })
 
