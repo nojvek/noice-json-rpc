@@ -1,13 +1,14 @@
 {
   "name": "noice-json-rpc",
-  "version": "1.0.0",
-  "description": "Auto generate crdi.d.ts interface from protocol.json files used by Chrome Remote Debugging Protocol",
+  "version": "0.0.2",
+  "description": "Noice Json RPC exposes and clean ES6 Proxy and Promise based API for JSON RPC2 Clients and Servers",
   "main": "lib/noice-json-rpc.js",
   "typings": "lib/noice-json-rpc.d.ts",
   "files": ["lib"],
   "scripts": {
     "build": "tsc -p src",
-    "clean": "rm -rf lib"
+    "clean": "rm -rf lib",
+    "test": "mocha ."
   },
   "repository": {
     "type": "git",
