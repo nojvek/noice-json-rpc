@@ -1,7 +1,7 @@
 # Noice Json Rpc
 [![build status](https://travis-ci.org/nojvek/noice-json-rpc.svg?branch=master)](https://travis-ci.org/nojvek/noice-json-rpc)
 
-Client and Server helpers to implement a clean function based api for Json Rpc.
+Client and Server helpers to implement a clean function based Api for Json Rpc.
 
 ## Example
 
