@@ -1,10 +1,12 @@
 {
   "name": "noice-json-rpc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Noice Json RPC exposes and clean ES6 Proxy and Promise based API for JSON RPC2 Clients and Servers",
   "main": "lib/noice-json-rpc.js",
   "typings": "lib/noice-json-rpc.d.ts",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "tsc -p src",
     "clean": "rm -rf lib",
@@ -33,6 +35,7 @@
   },
   "homepage": "https://github.com/nojvek/noice-json-rpc#readme",
   "devDependencies": {
+    "chai": "^3.5.0",
     "chrome-remote-debug-protocol": "^1.0.1",
     "ws": "^1.1.1"
   }
