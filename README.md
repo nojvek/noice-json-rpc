@@ -2,9 +2,9 @@
 [![Build Status](https://img.shields.io/travis/nojvek/noice-json-rpc/master.svg)](https://travis-ci.org/nojvek/noice-json-rpc)
 [![Coverage Status](https://img.shields.io/coveralls/nojvek/noice-json-rpc/master.svg)](https://coveralls.io/github/nojvek/noice-json-rpc?branch=master)
 [![npm version](https://img.shields.io/npm/v/noice-json-rpc.svg)](https://www.npmjs.com/package/noice-json-rpc)
-[![npm](https://img.shields.io/npm/dt/express.svg?maxAge=2592000)]()
-[![npm](https://img.shields.io/npm/l/express.svg?maxAge=2592000)]()
-
+[![npm](https://img.shields.io/npm/dt/express.svg?maxAge=2592000)](https://www.npmjs.com/package/noice-json-rpc)
+[![licence](https://img.shields.io/npm/l/express.svg?maxAge=2592000)](https://github.com/nojvek/noice-json-rpc)
+[![issues open](https://img.shields.io/github/issues/nojvek/noice-json-rpc.svg?maxAge=2592000)](https://github.com/nojvek/noice-json-rpc/issues)
 
 Client and Server helpers to implement a clean function based Api for Json Rpc.
 
