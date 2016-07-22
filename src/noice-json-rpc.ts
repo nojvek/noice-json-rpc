@@ -110,10 +110,11 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
 
     private _sendQueuedRequests() {
         if (this._connected) {
-            for (let messageStr in this._requestQueue) {
+            for (let messageStr of this._requestQueue) {
                 this._logMessage(messageStr, "send")
                 this._socket.send(messageStr)
             }
+            this._requestQueue = []
         }
     }
 
