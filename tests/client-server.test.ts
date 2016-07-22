@@ -45,11 +45,10 @@ describe('Client', () => {
     it('.notify() sends notifications to server', () => {
         client = new Client(socket, {logConsole: true})
         socket.emit('open')
-        const send = sandbox.stub(socket, "send")
-        client.notify("dying", {health: 10})
-        asserExpr(() => send.calledWith(""))
+        const send = sandbox.stub(socket, 'send')
+        client.notify('dying', {health: 10})
+        asserExpr(() => send.calledWith(`{"method":"dying","params":{"health":10}}`))
     })
-
 
     it('emits error when recieves malformed json', () => {
     })
