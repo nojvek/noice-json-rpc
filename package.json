@@ -12,7 +12,8 @@
     "clean": "rm -rf lib && rm -rf test",
     "pretest": "tsc -p tests",
     "test": "istanbul cover node_modules/.bin/_mocha -- -R spec out/*.test.js",
-    "coveralls": "cat coverage/lcov.info | node_modules/.bin/coveralls"
+    "coveralls": "cat coverage/lcov.info | node_modules/.bin/coveralls",
+    "example": "node out/example.js"
   },
   "repository": {
     "type": "git",

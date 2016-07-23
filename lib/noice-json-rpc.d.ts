@@ -1,6 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 import { JsonRpc2 } from './json-rpc2';
 import { EventEmitter } from 'events';
+export { JsonRpc2 };
 export interface LikeSocket {
     send(message: string): void;
     on(event: string, cb: Function): any;
@@ -52,8 +53,9 @@ export declare class Client extends EventEmitter implements JsonRpc2.Client {
      * api.domain.emit{method} will send {method} notifications to the server
      * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
      * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
+     * Calling client.api('') will return an unprefixed client. e.g api.hello() is equivalient to client.send('hello')
      */
-    api(domain?: string): any;
+    api(prefix?: string): any;
 }
 /**
  * Creates a RPC Server.
@@ -82,5 +84,5 @@ export declare class Server extends EventEmitter implements JsonRpc2.Server {
      * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
      * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
      */
-    api(domain?: string): any;
+    api(prefix?: string): any;
 }

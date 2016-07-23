@@ -7,4 +7,5 @@ export class MockSocket extends EventEmitter implements LikeSocket {
 }
 
 export class MockSocketServer extends EventEmitter implements LikeSocketServer {
+    clients: LikeSocket[]
 }

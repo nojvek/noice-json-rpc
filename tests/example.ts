@@ -60,5 +60,5 @@ function setupServer() {
 
 }
 
-//setupServer()
-//setupClient()
+setupServer()
+setupClient()

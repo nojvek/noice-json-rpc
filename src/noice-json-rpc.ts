@@ -2,6 +2,7 @@
 
 import {JsonRpc2} from './json-rpc2'
 import {EventEmitter} from 'events'
+export {JsonRpc2}
 
 export interface LikeSocket {
     send(message: string): void
@@ -76,7 +77,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
 
         // Check that messages is well formed
         if (!message){
-            this.emit('error', new Error(`Malformed message: ${messageStr}`))
+            this.emit('error', new Error(`Message cannot be null, empty or undefined`))
         } else if (message.id) {
             if (this._responsePromiseMap.has(message.id)) {
                 // Resolve promise from pending message
@@ -86,14 +87,16 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
                 } else if (message.error) {
                     promise.reject(message.error)
                 } else {
-                    this.emit('error', new Error(`Invalid message: ${messageStr}`))
+                    this.emit('error', new Error(`Response must have result or error: ${messageStr}`))
                 }
             } else {
-                this.emit('error', new Error(`Response with id ${message.id} has no pending request.`))
+                this.emit('error', new Error(`Response with id:${message.id} has no pending request`))
             }
         } else if (message.method) {
             // Server has sent a notification
             this.emit(message.method, message.params)
+        } else {
+            this.emit('error', new Error(`Invalid message: ${messageStr}`))
         }
     }
 
@@ -148,8 +151,9 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
      * api.domain.emit{method} will send {method} notifications to the server
      * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
      * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
+     * Calling client.api('') will return an unprefixed client. e.g api.hello() is equivalient to client.send('hello')
      */
-    api(domain?: string): any {
+    api(prefix?: string): any {
         if (!Proxy) {
             throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
         }
@@ -159,20 +163,20 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
                 if (target[prop]) {
                     return target[prop]
                 }
-
-                if (prop == "__proto__") {
+                // Special handling for prototype so console intellisense works on noice objects
+                if (prop === "__proto__" || prop === "prototype") {
                     return Object.prototype
-                } else if (!domain) {
-                    target[prop] = this.api(prop)
+                } else if (prefix === void 0) { // Prefix is undefined. Create domain prefix
+                    target[prop] = this.api(`${prop}.`)
                 } else if (prop.substr(0,2) === "on" && prop.length > 3){
                     const method = prop[2].toLowerCase() + prop.substr(3)
-                    target[prop] = (handler: Function) => this.on(`${domain}.${method}`, handler)
+                    target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
                 } else if (prop.substr(0,4) === "emit" && prop.length > 5){
                     const method = prop[4].toLowerCase() + prop.substr(5)
-                    target[prop] = (params: any) => this.notify(`${domain}.${method}`, params)
+                    target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
                 } else {
                     const method = prop
-                    target[prop] = (params: any) => this.call(`${domain}.${method}`, params)
+                    target[prop] = (params: any) => this.call(`${prefix}${method}`, params)
                 }
 
                 return target[prop]
@@ -209,48 +213,48 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
 
     private processMessage(messageStr: string, socket: LikeSocket): void {
         this._logMessage(messageStr, "receive")
-        let message: JsonRpc2.Request
+        let request: JsonRpc2.Request
 
         // Ensure JSON is not malformed
         try {
-            message = JSON.parse(messageStr)
+            request = JSON.parse(messageStr)
         } catch (e) {
-            return this._sendError(socket, message, JsonRpc2.ErrorCode.ParseError)
+            return this._sendError(socket, request, JsonRpc2.ErrorCode.ParseError)
         }
 
 
         // Ensure method is atleast defined
-        if (message && message.method && typeof message.method == "string") {
-            if (message.id && typeof message.id === "number") {
-                const handler = this._exposedMethodsMap.get(message.method)
+        if (request && request.method && typeof request.method == "string") {
+            if (request.id && typeof request.id === "number") {
+                const handler = this._exposedMethodsMap.get(request.method)
                 // Handler is defined so lets call it
                 if (handler) {
                     try {
-                        const result: JsonRpc2.PromiseOrNot<any> = handler.call(null, message.params)
+                        const result: JsonRpc2.PromiseOrNot<any> = handler.call(null, request.params)
                         if (result instanceof Promise) {
                             // Result is a promise, so lets wait for the result and handle accordingly
                             result.then((actualResult: any) => {
-                                this._send(socket, {id: message.id, result: actualResult || {}})
+                                this._send(socket, {id: request.id, result: actualResult || {}})
                             }).catch((error: Error) => {
-                                this._sendError(socket, message, JsonRpc2.ErrorCode.InternalError, error);
+                                this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error);
                             })
                         } else {
                             // Result is not a promise so send immediately
-                            this._send(socket, {id: message.id, result: result || {}})
+                            this._send(socket, {id: request.id, result: result || {}})
                         }
                     } catch (error) {
-                        this._sendError(socket, message, JsonRpc2.ErrorCode.InternalError, error);
+                        this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error);
                     }
                 } else {
-                    this._sendError(socket, message, JsonRpc2.ErrorCode.MethodNotFound)
+                    this._sendError(socket, request, JsonRpc2.ErrorCode.MethodNotFound)
                 }
             } else {
                 // Message is a notification, so just emit
-                this.emit(message.method, message.params)
+                this.emit(request.method, request.params)
             }
         } else {
             // No method property, send InvalidRequest error
-            this._sendError(socket, message, JsonRpc2.ErrorCode.InvalidRequest)
+            this._sendError(socket, request, JsonRpc2.ErrorCode.InvalidRequest)
         }
     }
 
@@ -325,7 +329,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
      * The api object leads itself to a very clean interface i.e `await api.Domain.func(params)` calls
      * This allows the consumer to abstract all the internal details of marshalling the message from function call to a string
      */
-    api(domain?: string): any {
+    api(prefix?: string): any {
         if (!Proxy) {
             throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
         }
@@ -336,22 +340,22 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                     return target[prop]
                 }
 
-                if (prop == "__proto__") {
+                if (prop == "__proto__" || "prototype") {
                     return Object.prototype
-                } else if (!domain) {
+                } else if (prefix === void 0) {
                     target[prop] = this.api(prop)
                 } else if (prop.substr(0,2) === "on" && prop.length > 3){
                     const method = prop[2].toLowerCase() + prop.substr(3)
-                    target[prop] = (handler: Function) => this.on(`${domain}.${method}`, handler)
+                    target[prop] = (handler: Function) => this.on(`${prefix}.${method}`, handler)
                 } else if (prop.substr(0,4) === "emit" && prop.length > 5){
                     const method = prop[4].toLowerCase() + prop.substr(5)
-                    target[prop] = (params: any) => this.notify(`${domain}.${method}`, params)
+                    target[prop] = (params: any) => this.notify(`${prefix}.${method}`, params)
                 } else if (prop === "expose"){
                     target[prop] = (module: any) => {
-                        if (!module) throw new Error("An iterable object expected to expose functions")
+                        if (!module) throw new Error("Expected an iterable object to expose functions")
                         for (let funcName in module) {
                             if (typeof module[funcName] === "function") {
-                                this.expose(`${domain}.${funcName}`, module[funcName].bind(module))
+                                this.expose(`${prefix}.${funcName}`, module[funcName].bind(module))
                             }
                         }
                     }
