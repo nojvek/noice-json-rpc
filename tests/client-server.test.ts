@@ -6,9 +6,13 @@ import * as sinon from 'sinon'
 // TODO: Get 100% test coverage.
 
 // Auto stringify expressions
-const asserExpr = (expr: Function) => {
+const assertExpr = (expr: Function) => {
     assert(expr(), expr.toString())
 }
+
+const waitForPromiseTick = () => new Promise((resolve) => {
+    resolve()
+})
 
 describe('Client', () => {
     let client: Client
@@ -30,10 +34,26 @@ describe('Client', () => {
         }, TypeError)
     })
 
-    it('waits for socket to be opened before sending message', () => {
+    it('waits for socket to be opened before sending message', async (done) => {
+        client = new Client(socket)
+        const send = sandbox.stub(socket, 'send')
+        const callPromise = client.call('dying', {health: 10})
+        await waitForPromiseTick()
+        assertExpr(() => send.notCalled)
+        socket.emit('open')
+        assertExpr(() => send.calledWith(`{"id":1,"method":"dying","params":{"health":10}}`))
+        done()
     })
 
-    it('.call() resolves promise when server responds with a result', () => {
+    it('.call() resolves promise when server responds with a result', async (done) => {
+        client = new Client(socket)
+        socket.emit('open')
+        const promise = client.call('dying', {health: 10})
+        await waitForPromiseTick()
+        socket.emit('message', `{"id":1,"result":{"acknowledged":true}}`)
+        const result = await promise
+        assertExpr(() => result.acknowledged)
+        done()
     })
 
     it('.call() rejects promise when server responds with an error', () => {
@@ -43,11 +63,11 @@ describe('Client', () => {
     })
 
     it('.notify() sends notifications to server', () => {
-        client = new Client(socket, {logConsole: true})
+        client = new Client(socket)
         socket.emit('open')
         const send = sandbox.stub(socket, 'send')
         client.notify('dying', {health: 10})
-        asserExpr(() => send.calledWith(`{"method":"dying","params":{"health":10}}`))
+        assertExpr(() => send.calledWith(`{"method":"dying","params":{"health":10}}`))
     })
 
     it('emits error when recieves malformed json', () => {

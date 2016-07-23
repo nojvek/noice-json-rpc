@@ -28,8 +28,8 @@
             "port": 5858,
             "address": "localhost",
             "restart": false,
-            "sourceMaps": false,
-            "outDir": null,
+            "sourceMaps": true,
+            "outDir": "${workspaceRoot}/out",
             "localRoot": "${workspaceRoot}",
             "remoteRoot": null
         }

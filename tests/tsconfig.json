@@ -3,7 +3,7 @@
         "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": false,
-        "sourceMap": false,
+        "sourceMap": true,
         "target": "ES6",
         "declaration": false,
         "outDir": "../out",
