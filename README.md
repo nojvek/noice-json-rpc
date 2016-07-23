@@ -8,7 +8,13 @@
 
 Client and Server helpers to implement a clean function based Api for Json Rpc.
 
-## Example
+Noice Json Rpc takes in a websocket like object. It calls `send(msg:str)` function and expects messages to come from `on('message', handler)`. It works out of the box with WebSockets but it can also work with stdin/stdout, worker threads, iframes or any other mechanism in which strings can be sent or received. 
+
+Its only dependency is `events.EventEmitter`.
+
+Using ES6 proxies it exposes a clean client-server api. Since its written in TypeScript, the api object can be cast to work off an interface specific to the domain. e.g [chrome-remote-debug-protocol](https://github.com/nojvek/chrome-remote-debug-protocol) 
+
+## [Example](tests/example.ts)
 
 ```js
 import * as WebSocket from 'ws'
