@@ -74,7 +74,7 @@ export declare class Server extends EventEmitter implements JsonRpc2.Server {
     setLogging({logEmit, logConsole}?: LogOpts): void;
     private _logMessage(messageStr, direction);
     private _send(socket, message);
-    private _sendError(socket, request, errorCode, errorData?);
+    private _sendError(socket, request, errorCode, error?);
     private _errorFromCode(code, data?, method?);
     expose(method: string, handler: (params: any) => Promise<any>): void;
     notify(method: string, params?: any): void;

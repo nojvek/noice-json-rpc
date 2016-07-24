@@ -280,10 +280,10 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
         socket.send(messageStr)
     }
 
-    private _sendError(socket: LikeSocket, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, errorData?: any) {
+    private _sendError(socket: LikeSocket, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, error?: Error) {
         this._send(socket, {
             id: request && request.id || -1,
-            error: this._errorFromCode(errorCode, errorData, request.method)
+            error: this._errorFromCode(errorCode, error && error.message || error, request && request.method)
         })
     }
 
@@ -340,27 +340,30 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                     return target[prop]
                 }
 
-                if (prop == "__proto__" || "prototype") {
+                if (prop === "__proto__" || prop === "prototype") {
                     return Object.prototype
                 } else if (prefix === void 0) {
-                    target[prop] = this.api(prop)
+                    target[prop] = this.api(`${prop}.`)
                 } else if (prop.substr(0,2) === "on" && prop.length > 3){
                     const method = prop[2].toLowerCase() + prop.substr(3)
-                    target[prop] = (handler: Function) => this.on(`${prefix}.${method}`, handler)
+                    target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
                 } else if (prop.substr(0,4) === "emit" && prop.length > 5){
                     const method = prop[4].toLowerCase() + prop.substr(5)
-                    target[prop] = (params: any) => this.notify(`${prefix}.${method}`, params)
+                    target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
                 } else if (prop === "expose"){
                     target[prop] = (module: any) => {
-                        if (!module) throw new Error("Expected an iterable object to expose functions")
+                        if (!module || typeof module !== "object") {
+                            throw new Error("Expected an iterable object to expose functions")
+                        }
+
                         for (let funcName in module) {
                             if (typeof module[funcName] === "function") {
-                                this.expose(`${prefix}.${funcName}`, module[funcName].bind(module))
+                                this.expose(`${prefix}${funcName}`, module[funcName].bind(module))
                             }
                         }
                     }
                 } else {
-                    return null
+                    return undefined
                 }
 
                 return target[prop]

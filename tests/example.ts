@@ -20,7 +20,10 @@ async function setupClient() {
 
         await api.Profiler.start()
         await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for event
-        await api.Profiler.stop()
+        const result = await api.Profiler.stop()
+
+        console.log("Result", result)
+        process.exit(0)
 
     } catch (e) {
         console.error(e)

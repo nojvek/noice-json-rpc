@@ -2,26 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceRoot}/lib/noice-json-rpc.js",
-            "stopOnEntry": false,
-            "args": [],
-            "cwd": "${workspaceRoot}",
-            "preLaunchTask": null,
-            "runtimeExecutable": null,
-            "runtimeArgs": [
-                "--nolazy"
-            ],
-            "env": {
-                "NODE_ENV": "development"
-            },
-            "externalConsole": false,
-            "sourceMaps": false,
-            "outDir": null
-        },
-        {
             "name": "Attach",
             "type": "node",
             "request": "attach",
@@ -31,7 +11,9 @@
             "sourceMaps": true,
             "outDir": "${workspaceRoot}/out",
             "localRoot": "${workspaceRoot}",
-            "remoteRoot": null
+            "remoteRoot": null,
+            "preLaunchTask": "mocha-debug",
+            "trace": "all"
         }
     ]
 }

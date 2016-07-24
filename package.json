@@ -1,6 +1,6 @@
 {
   "name": "noice-json-rpc",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Noice Json RPC exposes a clean ES6 Proxy and Promise based interface for JSON-RPC2 Clients and Servers",
   "main": "lib/noice-json-rpc.js",
   "typings": "lib/noice-json-rpc.d.ts",
@@ -12,6 +12,7 @@
     "clean": "rm -rf lib && rm -rf test",
     "pretest": "tsc -p tests",
     "test": "istanbul cover node_modules/.bin/_mocha -- -R spec out/*.test.js",
+    "mocha-debug": "mocha --debug-brk -R spec out/*.test.js",
     "coveralls": "cat coverage/lcov.info | node_modules/.bin/coveralls",
     "example": "node out/example.js"
   },

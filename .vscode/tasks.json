@@ -15,6 +15,9 @@
             "taskName": "test",
             "isBuildCommand": true,
             "problemMatcher": "$tsc-watch"
+        },
+        {
+            "taskName": "mocha-debug"
         }
     ]
 }
