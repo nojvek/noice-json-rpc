@@ -15,7 +15,6 @@ async function setupClient() {
             api.Runtime.enable(),
             api.Debugger.enable(),
             api.Profiler.enable(),
-            api.Runtime.run(),
         ])
 
         await api.Profiler.start()
@@ -40,7 +39,6 @@ function setupServer() {
     api.Profiler.expose({enable})
     api.Runtime.expose({
         enable,
-        run() {}
     })
     api.Profiler.expose({
         enable,
@@ -52,7 +50,7 @@ function setupServer() {
         stop() {
             const response: Crdp.Profiler.StopResponse = {
                 profile: {
-                    head: null,
+                    nodes: [],
                     startTime: 0,
                     endTime: 100
                 }

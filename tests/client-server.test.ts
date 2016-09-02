@@ -65,7 +65,7 @@ describe('Client', () => {
         assertExpr(() => send.calledWith(`{"id":1,"method":"help","params":{"lives":1}}`))
     })
 
-    it('.call() resolves promise when server responds with a result and throws when error response', async (done) => {
+    it('.call() resolves promise when server responds with a result and throws when error response', async () => {
         const api: GameClient = new Client(socket).api('')
         const resultPromise = api.help({lives: 1})
         socket.emit('open')
@@ -80,7 +80,6 @@ describe('Client', () => {
         catch (e){
             assertExpr(() => e.message === "Cannot help at level 0")
         }
-        done()
     })
 
     it('emits notifications from server', () => {
@@ -213,94 +212,80 @@ describe('Server', () => {
         assertExpr(() => onDying.calledWith({health: 2}))
     })
 
-    it('.api.expose can expose functions and reply to requests', async (done) => {
-        try {
-            const api: GameServerApi = new Server(socketServer).api()
-            socketServer.emit('connection', socket)
-            const send = sandbox.stub(socket, 'send')
+    it('.api.expose can expose functions and reply to requests', async () => {
+        const api: GameServerApi = new Server(socketServer).api()
+        socketServer.emit('connection', socket)
+        const send = sandbox.stub(socket, 'send')
 
-            // Returns promise
-            api.game.expose({
-                help({lives}) {
-                    assert.equal(lives, 2)
-                    return Promise.resolve({acknowledged: false})
-                }
-            })
+        // Returns promise
+        api.game.expose({
+            help({lives}) {
+                assert.equal(lives, 2)
+                return Promise.resolve({acknowledged: false})
+            }
+        })
 
-            socket.emit('message', `{"id":1,"method":"game.help","params":{"lives":2}}`)
-            await waitForPromiseTick()
-            assertExpr(() => send.lastCall.calledWith(`{"id":1,"result":{"acknowledged":false}}`))
+        socket.emit('message', `{"id":1,"method":"game.help","params":{"lives":2}}`)
+        await waitForPromiseTick()
+        assertExpr(() => send.lastCall.calledWith(`{"id":1,"result":{"acknowledged":false}}`))
 
-            // Returns object
-            api.game.expose({
-                help({lives}) {
-                    assert.equal(lives, 2)
-                    return {acknowledged: true}
-                }
-            })
+        // Returns object
+        api.game.expose({
+            help({lives}) {
+                assert.equal(lives, 2)
+                return {acknowledged: true}
+            }
+        })
 
-            socket.emit('message', `{"id":2,"method":"game.help","params":{"lives":2}}`)
-            assertExpr(() => send.lastCall.calledWith(`{"id":2,"result":{"acknowledged":true}}`))
-
-            done()
-        } catch (e) {
-            /* istanbul ignore next */
-            done(e)
-        }
+        socket.emit('message', `{"id":2,"method":"game.help","params":{"lives":2}}`)
+        assertExpr(() => send.lastCall.calledWith(`{"id":2,"result":{"acknowledged":true}}`))
     })
 
-    it('handles errors on api and requests gracefully', async (done) => {
-        try {
-            const api: GameServer = new Server(socketServer, {logConsole: false}).api('')
-            socketServer.emit('connection', socket)
+    it('handles errors on api and requests gracefully', async () => {
+        const api: GameServer = new Server(socketServer, {logConsole: false}).api('')
+        socketServer.emit('connection', socket)
 
-            assert.throws(() => {
-                api.expose(<any>"blah")
-            }, "Expected an iterable object to expose functions")
+        assert.throws(() => {
+            api.expose(<any>"blah")
+        }, "Expected an iterable object to expose functions")
 
-            // Only on_, emit_ and expose props are valid on API
-            assert.equal((<any>api).hello, undefined)
+        // Only on_, emit_ and expose props are valid on API
+        assert.equal((<any>api).hello, undefined)
 
-            // Error on exposed function
-            api.expose({
-                help({lives}): any {
-                    throw new Error("Server made a boo boo")
-                }
-            })
+        // Error on exposed function
+        api.expose({
+            help({lives}): any {
+                throw new Error("Server made a boo boo")
+            }
+        })
 
-            // Internal Error
-            const send = sandbox.stub(socket, 'send')
-            socket.emit('message', `{"id":1,"method":"help","params":{"lives":2}}`)
-            assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32603,"message":"InternalError: Internal Error when calling 'help'","data":"Server made a boo boo"}}`))
+        // Internal Error
+        const send = sandbox.stub(socket, 'send')
+        socket.emit('message', `{"id":1,"method":"help","params":{"lives":2}}`)
+        assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32603,"message":"InternalError: Internal Error when calling 'help'","data":"Server made a boo boo"}}`))
 
-            // Error via promise
-            api.expose({
-                help({lives}): Promise<any> {
-                    return Promise.reject(new Error("Server made async boo boo"))
-                }
-            })
+        // Error via promise
+        api.expose({
+            help({lives}): Promise<any> {
+                return Promise.reject(new Error("Server made async boo boo"))
+            }
+        })
 
-            socket.emit('message', `{"id":1,"method":"help","params":{"lives":2}}`)
-            await waitForPromiseTick()
-            assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32603,"message":"InternalError: Internal Error when calling 'help'","data":"Server made async boo boo"}}`))
+        socket.emit('message', `{"id":1,"method":"help","params":{"lives":2}}`)
+        await waitForPromiseTick()
+        assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32603,"message":"InternalError: Internal Error when calling 'help'","data":"Server made async boo boo"}}`))
 
-            // Json Error
-            socket.emit('message', `blah blah blah`)
-            assertExpr(() => send.lastCall.calledWith(`{"id":-1,"error":{"code":-32700,"message":"ParseError: invalid JSON received"}}`))
+        // Json Error
+        socket.emit('message', `blah blah blah`)
+        assertExpr(() => send.lastCall.calledWith(`{"id":-1,"error":{"code":-32700,"message":"ParseError: invalid JSON received"}}`))
 
-            // Invalid Request
-            socket.emit('message', `{"id":1}`)
-            assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32600,"message":"InvalidRequest: JSON sent is not a valid request object"}}`))
+        // Invalid Request
+        socket.emit('message', `{"id":1}`)
+        assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32600,"message":"InvalidRequest: JSON sent is not a valid request object"}}`))
 
-            // Method not found
-            socket.emit('message', `{"id":1,"method":"yo"}`)
-            assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32601,"message":"MethodNotFound: 'yo' wasn't found"}}`))
-
-            done()
-        } catch (e) {
-            /* istanbul ignore next */
-            done(e)
-        }
+        // Method not found
+        socket.emit('message', `{"id":1,"method":"yo"}`)
+        assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32601,"message":"MethodNotFound: 'yo' wasn't found"}}`))
     })
 
     it('throws error if broadcasting notify messages is not supported', () => {
