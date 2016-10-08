@@ -33,7 +33,7 @@ function setupServer() {
     const wssServer = new WebSocketServer({port: 8080});
     const api: Crdp.CrdpServer = new rpc.Server(wssServer).api();
 
-    const enable = () => {}
+    const enable = () => Promise.resolve()
 
     api.Debugger.expose({enable})
     api.Profiler.expose({enable})
@@ -46,6 +46,7 @@ function setupServer() {
             setTimeout(() => {
                 api.Runtime.emitExecutionContextDestroyed({executionContextId:1})
             }, 1000)
+            return Promise.resolve()
         },
         stop() {
             const response: Crdp.Profiler.StopResponse = {
@@ -55,7 +56,7 @@ function setupServer() {
                     endTime: 100
                 }
             }
-            return response
+            return Promise.resolve(response)
         }
     })
 
