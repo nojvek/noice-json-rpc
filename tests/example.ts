@@ -7,7 +7,7 @@ import * as rpc from '../lib/noice-json-rpc'
 
 async function setupClient() {
     try {
-        const api: Crdp.CrdpClient = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
+        const api: Crdp.CrdpClient = new rpc.Client(new WebSocket('ws://localhost:8080'), {logConsole: true}).api()
 
         await Promise.all([
             api.Runtime.enable(),
@@ -19,7 +19,7 @@ async function setupClient() {
         await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for event
         const result = await api.Profiler.stop()
 
-        console.log("Result", result)
+        console.log('Result', result)
         process.exit(0)
 
     } catch (e) {
@@ -42,7 +42,7 @@ function setupServer() {
         enable,
         start() {
             setTimeout(() => {
-                api.Runtime.emitExecutionContextDestroyed({executionContextId:1})
+                api.Runtime.emitExecutionContextDestroyed({executionContextId: 1})
             }, 1000)
             return Promise.resolve()
         },

@@ -37,7 +37,7 @@ export interface ServerOpts extends LogOpts {
  * The Client can be used to communicate over processes, http or anything that can send and receive strings
  * It just needs to pass in an object that implements LikeSocket interface
  */
-export class Client extends EventEmitter implements JsonRpc2.Client{
+export class Client extends EventEmitter implements JsonRpc2.Client {
     private _socket: LikeSocket
     private _responsePromiseMap: Map<number, {resolve: Function, reject: Function}> = new Map()
     private _nextMessageId: number = 0
@@ -46,12 +46,12 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     private _consoleLog: boolean = false
     private _requestQueue: string[] = []
 
-    constructor(socket: LikeSocket, opts?: ClientOpts){
+    constructor(socket: LikeSocket, opts?: ClientOpts) {
         super()
         this.setLogging(opts)
 
         if (!socket) {
-            throw new TypeError("socket cannot be undefined or null")
+            throw new TypeError('socket cannot be undefined or null')
         }
 
         this._socket = socket
@@ -63,7 +63,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     }
 
     public processMessage(messageStr: string) {
-        this._logMessage(messageStr, "receive")
+        this._logMessage(messageStr, 'receive')
         let message: JsonRpc2.Response & JsonRpc2.Notification
 
         // Ensure JSON is not malformed
@@ -74,7 +74,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
         }
 
         // Check that messages is well formed
-        if (!message){
+        if (!message) {
             this.emit('error', new Error(`Message cannot be null, empty or undefined`))
         } else if (message.id) {
             if (this._responsePromiseMap.has(message.id)) {
@@ -112,16 +112,16 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
     private _sendQueuedRequests() {
         if (this._connected) {
             for (let messageStr of this._requestQueue) {
-                this._logMessage(messageStr, "send")
+                this._logMessage(messageStr, 'send')
                 this._socket.send(messageStr)
             }
             this._requestQueue = []
         }
     }
 
-    private _logMessage(message: string, direction: "send" | "receive") {
+    private _logMessage(message: string, direction: 'send' | 'receive') {
         if (this._consoleLog) {
-            console.log(`Client ${direction === "send" ? ">" : "<"}`, message)
+            console.log(`Client ${direction === 'send' ? '>' : '<'}`, message)
         }
 
         if (this._emitLog) {
@@ -153,7 +153,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
      */
     api(prefix?: string): any {
         if (!Proxy) {
-            throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
+            throw new Error('api() requires ES6 Proxy. Please use an ES6 compatible engine')
         }
 
         return new Proxy({}, {
@@ -162,14 +162,14 @@ export class Client extends EventEmitter implements JsonRpc2.Client{
                     return target[prop]
                 }
                 // Special handling for prototype so console intellisense works on noice objects
-                if (prop === "__proto__" || prop === "prototype") {
+                if (prop === '__proto__' || prop === 'prototype') {
                     return Object.prototype
                 } else if (prefix === void 0) { // Prefix is undefined. Create domain prefix
                     target[prop] = this.api(`${prop}.`)
-                } else if (prop.substr(0,2) === "on" && prop.length > 3){
+                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) {
                     const method = prop[2].toLowerCase() + prop.substr(3)
                     target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
-                } else if (prop.substr(0,4) === "emit" && prop.length > 5){
+                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) {
                     const method = prop[4].toLowerCase() + prop.substr(5)
                     target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
                 } else {
@@ -195,12 +195,12 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     private _emitLog: boolean = false;
     private _consoleLog: boolean = false;
 
-    constructor (server: LikeSocketServer, opts?:ServerOpts) {
+    constructor (server: LikeSocketServer, opts?: ServerOpts) {
         super()
         this.setLogging(opts)
 
         if (!server) {
-            throw new TypeError("server cannot be undefined or null")
+            throw new TypeError('server cannot be undefined or null')
         }
 
         this._socketServer = server
@@ -210,7 +210,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     }
 
     private processMessage(messageStr: string, socket: LikeSocket): void {
-        this._logMessage(messageStr, "receive")
+        this._logMessage(messageStr, 'receive')
         let request: JsonRpc2.Request
 
         // Ensure JSON is not malformed
@@ -222,8 +222,8 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
 
 
         // Ensure method is atleast defined
-        if (request && request.method && typeof request.method == "string") {
-            if (request.id && typeof request.id === "number") {
+        if (request && request.method && typeof request.method === 'string') {
+            if (request.id && typeof request.id === 'number') {
                 const handler = this._exposedMethodsMap.get(request.method)
                 // Handler is defined so lets call it
                 if (handler) {
@@ -262,9 +262,9 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
         this._consoleLog = logConsole
     }
 
-    private _logMessage(messageStr: string, direction: "send" | "receive") {
+    private _logMessage(messageStr: string, direction: 'send' | 'receive') {
         if (this._consoleLog) {
-            console.log(`Server ${direction === "send" ? ">" : "<"}`, messageStr)
+            console.log(`Server ${direction === 'send' ? '>' : '<'}`, messageStr)
         }
 
         if (this._emitLog) {
@@ -274,7 +274,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
 
     private _send(socket: LikeSocket, message: JsonRpc2.Response | JsonRpc2.Notification ) {
         const messageStr = JSON.stringify(message)
-        this._logMessage(messageStr, "send")
+        this._logMessage(messageStr, 'send')
         socket.send(messageStr)
     }
 
@@ -286,7 +286,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     }
 
     private _errorFromCode(code: JsonRpc2.ErrorCode, data?: any, method?: string): JsonRpc2.Error {
-        let message = ""
+        let message = ''
 
         switch (code) {
             case JsonRpc2.ErrorCode.InternalError:
@@ -296,10 +296,10 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                 message =  `MethodNotFound: '${method}' wasn't found`
                 break
             case JsonRpc2.ErrorCode.InvalidRequest:
-                message =  "InvalidRequest: JSON sent is not a valid request object"
+                message =  'InvalidRequest: JSON sent is not a valid request object'
                 break
             case JsonRpc2.ErrorCode.ParseError:
-                message =  "ParseError: invalid JSON received"
+                message =  'ParseError: invalid JSON received'
                 break
         }
 
@@ -317,7 +317,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                 this._send(ws, {method, params})
             })
         } else {
-            throw new Error("SocketServer does not support broadcasting. No 'clients: LikeSocket[]' property found")
+            throw new Error('SocketServer does not support broadcasting. No "clients: LikeSocket[]" property found')
         }
     }
 
@@ -329,7 +329,7 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
      */
     api(prefix?: string): any {
         if (!Proxy) {
-            throw new Error("api() requires ES6 Proxy. Please use an ES6 compatible engine")
+            throw new Error('api() requires ES6 Proxy. Please use an ES6 compatible engine')
         }
 
         return new Proxy({}, {
@@ -338,24 +338,24 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                     return target[prop]
                 }
 
-                if (prop === "__proto__" || prop === "prototype") {
+                if (prop === '__proto__' || prop === 'prototype') {
                     return Object.prototype
                 } else if (prefix === void 0) {
                     target[prop] = this.api(`${prop}.`)
-                } else if (prop.substr(0,2) === "on" && prop.length > 3){
+                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) {
                     const method = prop[2].toLowerCase() + prop.substr(3)
                     target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
-                } else if (prop.substr(0,4) === "emit" && prop.length > 5){
+                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) {
                     const method = prop[4].toLowerCase() + prop.substr(5)
                     target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
-                } else if (prop === "expose"){
+                } else if (prop === 'expose') {
                     target[prop] = (module: any) => {
-                        if (!module || typeof module !== "object") {
-                            throw new Error("Expected an iterable object to expose functions")
+                        if (!module || typeof module !== 'object') {
+                            throw new Error('Expected an iterable object to expose functions')
                         }
 
                         for (let funcName in module) {
-                            if (typeof module[funcName] === "function") {
+                            if (typeof module[funcName] === 'function') {
                                 this.expose(`${prefix}${funcName}`, module[funcName].bind(module))
                             }
                         }

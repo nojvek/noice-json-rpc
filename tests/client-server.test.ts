@@ -77,8 +77,8 @@ describe('Client', () => {
         socket.emit('message', `{"id":2,"error":{"message":"Cannot help at level 0"}}`)
 
         try { await errorPromise }
-        catch (e){
-            assertExpr(() => e.message === "Cannot help at level 0")
+        catch (e) {
+            assertExpr(() => e.message === 'Cannot help at level 0')
         }
     })
 
@@ -88,7 +88,7 @@ describe('Client', () => {
         api.onLevelUp(<any>onLevelUp)
         socket.emit('open')
         socket.emit('message', `{"method":"levelUp","params":{"level":2}}`)
-        assertExpr(() => onLevelUp.calledWith({level:2}))
+        assertExpr(() => onLevelUp.calledWith({level: 2}))
     })
 
     it('.notify() sends notifications to server', () => {
@@ -101,18 +101,18 @@ describe('Client', () => {
 
     it('emits error when recieves malformed response', () => {
         client = new Client(socket)
-        let errorMessage: string = ""
+        let errorMessage: string = ''
         client.on('error', (error: Error) => errorMessage = error.message)
         const assertErrorMessage = (expectedErrorMessage: string) => {
             assert.equal(expectedErrorMessage, errorMessage)
-            errorMessage = ""
+            errorMessage = ''
         }
 
         socket.emit('message', `{"id":1,"result":{"acknowledged":true}}`)
-        assertErrorMessage("Response with id:1 has no pending request")
+        assertErrorMessage('Response with id:1 has no pending request')
 
         socket.emit('message', null)
-        assertErrorMessage("Message cannot be null, empty or undefined")
+        assertErrorMessage('Message cannot be null, empty or undefined')
 
         socket.emit('message', '{badJson:true}')
         assertErrorMessage('Unexpected token b in JSON at position 1')
@@ -121,7 +121,7 @@ describe('Client', () => {
         assertErrorMessage('Invalid message: {"badMessage":true}')
 
         socket.emit('open')
-        client.call("hello")
+        client.call('hello')
         socket.emit('message', `{"id":1,"badMessage":true}`)
         assertErrorMessage('Response must have result or error: {"id":1,"badMessage":true}')
     })
@@ -136,7 +136,7 @@ describe('Client', () => {
 
     it('.api creates an object with Proxy prototype', () => {
         const api: GameClientApi = new Client(socket).api()
-        assertExpr(() => (<any>api).prototype == Object.prototype)
+        assertExpr(() => (<any>api).prototype === Object.prototype)
     })
 
     it('.api throws error if ES6 Proxy not available', () => {
@@ -155,8 +155,8 @@ describe('Client', () => {
         client.on('send', logEmit)
         client.call('hello')
 
-        assert(logEmit.calledOnce, "logEmit.calledOnce")
-        assert(logConsole.calledOnce, "logEmit.calledOnce")
+        assert(logEmit.calledOnce, 'logEmit.calledOnce')
+        assert(logConsole.calledOnce, 'logEmit.calledOnce')
     })
 })
 
@@ -191,8 +191,8 @@ describe('Server', () => {
         server.on('send', logEmit)
         server.notify('hello')
 
-        assert(logEmit.calledOnce, "logEmit.calledOnce")
-        assert(logConsole.calledOnce, "logEmit.calledOnce")
+        assert(logEmit.calledOnce, 'logEmit.calledOnce')
+        assert(logConsole.calledOnce, 'logEmit.calledOnce')
     })
 
     it('.api.emitXYZ() broadcasts XYZ message ', () => {
@@ -246,8 +246,8 @@ describe('Server', () => {
         socketServer.emit('connection', socket)
 
         assert.throws(() => {
-            api.expose(<any>"blah")
-        }, "Expected an iterable object to expose functions")
+            api.expose(<any>'blah')
+        }, 'Expected an iterable object to expose functions')
 
         // Only on_, emit_ and expose props are valid on API
         assert.equal((<any>api).hello, undefined)
@@ -255,7 +255,7 @@ describe('Server', () => {
         // Error on exposed function
         api.expose({
             help({lives}): any {
-                throw new Error("Server made a boo boo")
+                throw new Error('Server made a boo boo')
             }
         })
 
@@ -267,7 +267,7 @@ describe('Server', () => {
         // Error via promise
         api.expose({
             help({lives}): Promise<any> {
-                return Promise.reject(new Error("Server made async boo boo"))
+                return Promise.reject(new Error('Server made async boo boo'))
             }
         })
 
@@ -290,12 +290,12 @@ describe('Server', () => {
 
     it('throws error if broadcasting notify messages is not supported', () => {
         server = new Server(socketServer)
-        assert.throws(() => server.notify('hello'), `SocketServer does not support broadcasting. No 'clients: LikeSocket[]' property found`)
+        assert.throws(() => server.notify('hello'), `SocketServer does not support broadcasting. No "clients: LikeSocket[]" property found`)
     })
 
     it('.api creates an object with Proxy prototype', () => {
         const api = new Server(socketServer).api()
-        assertExpr(() => (<any>api).prototype == Object.prototype)
+        assertExpr(() => (<any>api).prototype === Object.prototype)
     })
 
     it('.api throws error if ES6 Proxy not available', () => {
