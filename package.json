@@ -39,11 +39,18 @@
   },
   "homepage": "https://github.com/nojvek/noice-json-rpc#readme",
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.32",
+    "@types/node": "^6.0.43",
+    "@types/sinon": "^1.16.31",
+    "@types/ws": "0.0.34",
     "chai": "^3.5.0",
     "chrome-remote-debug-protocol": "^1.0.1",
     "coveralls": "^2.11.11",
+    "istanbul": "^0.4.5",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
+    "typescript": "^2.0.3",
     "ws": "^1.1.1"
   }
 }

@@ -1,5 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
-
 import * as fs from 'fs'
 import * as WebSocket from 'ws'
 import WebSocketServer = WebSocket.Server

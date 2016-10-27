@@ -1,5 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
-
 import {JsonRpc2} from './json-rpc2'
 import {EventEmitter} from 'events'
 export {JsonRpc2}

@@ -1,4 +1,4 @@
-/// <reference path="../typings/index.d.ts" />
+/// <reference types="node" />
 import { JsonRpc2 } from './json-rpc2';
 import { EventEmitter } from 'events';
 export { JsonRpc2 };
