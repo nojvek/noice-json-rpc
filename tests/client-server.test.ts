@@ -33,7 +33,7 @@ const assertExpr = (expr: Function) => {
     assert(expr(), expr.toString())
 }
 
-const waitForPromiseTick = () => new Promise((resolve) => resolve())
+const waitForNextTick = () => new Promise((resolve) => process.nextTick(resolve))
 
 describe('Client', () => {
     let client: Client
@@ -226,7 +226,7 @@ describe('Server', () => {
         })
 
         socket.emit('message', `{"id":1,"method":"game.help","params":{"lives":2}}`)
-        await waitForPromiseTick()
+        await waitForNextTick()
         assertExpr(() => send.lastCall.calledWith(`{"id":1,"result":{"acknowledged":false}}`))
 
         // Returns object
@@ -272,7 +272,7 @@ describe('Server', () => {
         })
 
         socket.emit('message', `{"id":1,"method":"help","params":{"lives":2}}`)
-        await waitForPromiseTick()
+        await waitForNextTick()
         assertExpr(() => send.lastCall.calledWith(`{"id":1,"error":{"code":-32603,"message":"InternalError: Internal Error when calling 'help'","data":"Server made async boo boo"}}`))
 
         // Json Error
