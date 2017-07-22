@@ -6,12 +6,9 @@ export interface LikeSocket {
     send(message: string): void;
     on(event: string, cb: Function): any;
     removeListener(event: string, cb: Function): any;
-    on(event: 'open', cb: (ws: LikeSocket) => void): any;
-    on(event: 'message', cb: (data: string) => void): any;
 }
 export interface LikeSocketServer {
     on(event: string, cb: Function): any;
-    on(event: 'connection', cb: (ws: LikeSocket) => void): any;
     clients?: LikeSocket[];
 }
 export interface LogOpts {

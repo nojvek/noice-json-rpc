@@ -4,16 +4,12 @@ export {JsonRpc2}
 
 export interface LikeSocket {
     send(message: string): void
-    on(event: string, cb: Function): any;
-    removeListener(event: string, cb: Function): any;
-
-    on(event: 'open', cb: (ws: LikeSocket) => void ): any
-    on(event: 'message', cb: (data: string) => void): any;
+    on(event: string, cb: Function): any
+    removeListener(event: string, cb: Function): any
 }
 
 export interface LikeSocketServer {
-    on(event: string, cb: Function): any;
-    on(event: 'connection', cb: (ws: LikeSocket) => void ): any
+    on(event: string, cb: Function): any
     clients?: LikeSocket[]
 }
 
@@ -59,7 +55,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
             this._connected = true
             this._sendQueuedRequests()
         })
-        socket.on('message', message => this.processMessage(message))
+        socket.on('message', (message: string) => this.processMessage(message))
     }
 
     public processMessage(messageStr: string) {
@@ -130,7 +126,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
     }
 
     call(method: string, params?: any): Promise<any> {
-        const id = ++this._nextMessageId;
+        const id = ++this._nextMessageId
         const message: JsonRpc2.Request = {id, method, params}
 
         return new Promise((resolve, reject) => {
@@ -192,8 +188,8 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
 export class Server extends EventEmitter implements JsonRpc2.Server {
     private _socketServer: LikeSocketServer
     private _exposedMethodsMap: Map<string, (params: any) => JsonRpc2.PromiseOrNot<any>> = new Map()
-    private _emitLog: boolean = false;
-    private _consoleLog: boolean = false;
+    private _emitLog: boolean = false
+    private _consoleLog: boolean = false
 
     constructor (server: LikeSocketServer, opts?: ServerOpts) {
         super()
@@ -204,8 +200,8 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
         }
 
         this._socketServer = server
-        server.on('connection', socket => {
-            socket.on('message', message => this.processMessage(message, socket))
+        server.on('connection', (socket: LikeSocket) => {
+            socket.on('message', (message: string) => this.processMessage(message, socket))
         })
     }
 
@@ -234,14 +230,14 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
                             result.then((actualResult: any) => {
                                 this._send(socket, {id: request.id, result: actualResult || {}})
                             }).catch((error: Error) => {
-                                this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error);
+                                this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error)
                             })
                         } else {
                             // Result is not a promise so send immediately
                             this._send(socket, {id: request.id, result: result || {}})
                         }
                     } catch (error) {
-                        this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error);
+                        this._sendError(socket, request, JsonRpc2.ErrorCode.InternalError, error)
                     }
                 } else {
                     this._sendError(socket, request, JsonRpc2.ErrorCode.MethodNotFound)
