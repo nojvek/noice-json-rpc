@@ -130,8 +130,12 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
         const message: JsonRpc2.Request = {id, method, params}
 
         return new Promise((resolve, reject) => {
-            this._responsePromiseMap.set(id, {resolve, reject})
-            this._send(message)
+            try {
+                this._send(message)
+                this._responsePromiseMap.set(id, {resolve, reject})
+            } catch (error) {
+                return reject(error);
+            }
         })
     }
 
@@ -275,10 +279,14 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     }
 
     private _sendError(socket: LikeSocket, request: JsonRpc2.Request, errorCode: JsonRpc2.ErrorCode, error?: Error) {
-        this._send(socket, {
-            id: request && request.id || -1,
-            error: this._errorFromCode(errorCode, error && error.message || error, request && request.method)
-        })
+        try {
+            this._send(socket, {
+                id: request && request.id || -1,
+                error: this._errorFromCode(errorCode, error && error.message || error, request && request.method)
+            })
+        } catch (error) {
+            // Since we can't even send errors, do nothing. The connection was probably closed.
+        }
     }
 
     private _errorFromCode(code: JsonRpc2.ErrorCode, data?: any, method?: string): JsonRpc2.Error {
