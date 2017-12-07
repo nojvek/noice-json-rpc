@@ -9,7 +9,7 @@ export interface LikeSocket {
 }
 export interface LikeSocketServer {
     on(event: string, cb: Function): any;
-    clients?: LikeSocket[];
+    clients?: Iterable<LikeSocket>;
 }
 export interface LogOpts {
     /** All messages will be emmitted and can be handled by client.on('receive', (msg: string) => void) and client.on('send', (msg: string) => any)  */

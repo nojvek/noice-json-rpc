@@ -10,7 +10,7 @@ export interface LikeSocket {
 
 export interface LikeSocketServer {
     on(event: string, cb: Function): any
-    clients?: LikeSocket[]
+    clients?: Iterable<LikeSocket>
 }
 
 export interface LogOpts {
@@ -317,9 +317,9 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
     notify (method: string, params?: any): void {
         // Broadcast message to all clients
         if (this._socketServer.clients) {
-            this._socketServer.clients.forEach(ws => {
+            for (let ws of this._socketServer.clients) {
                 this._send(ws, {method, params})
-            })
+            }
         } else {
             throw new Error('SocketServer does not support broadcasting. No "clients: LikeSocket[]" property found')
         }
