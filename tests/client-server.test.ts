@@ -1,4 +1,4 @@
-import {Client, Server, JsonRpc2} from '../lib/noice-json-rpc'
+import {Client, Server, JsonRpc2, MessageError} from '../lib/noice-json-rpc'
 import {MockSocket, MockSocketServer} from './client-server.mock'
 import {assert} from 'chai'
 import {SinonSandbox, sandbox as SinonSandboxFactory} from 'sinon'
@@ -304,4 +304,13 @@ describe('Server', () => {
         assert.throws(() => new Server(socketServer).api())
         Proxy = origProxy
     })
-})
+
+    describe('Client MessageError', () => {
+        it('returns the values supplied in the constructor for the getters', () => {
+            const error = new MessageError({code: 1234, message: 'Some error happened', data: 'custom data'});
+            assert.equal(error.code, 1234);
+            assert.equal(error.message, 'Some error happened');
+            assert.equal(error.data, 'custom data');
+        })
+    })
+});

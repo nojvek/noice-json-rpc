@@ -21,6 +21,13 @@ export interface ClientOpts extends LogOpts {
 }
 export interface ServerOpts extends LogOpts {
 }
+export declare class MessageError extends Error implements JsonRpc2.Error {
+    private _code;
+    private _data?;
+    constructor(error: JsonRpc2.Error);
+    readonly code: JsonRpc2.ErrorCode;
+    readonly data: any;
+}
 /**
  * Creates a RPC Client.
  * It is intentional that Client does not create a WebSocket object since we prefer composability

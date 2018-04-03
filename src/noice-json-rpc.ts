@@ -27,6 +27,25 @@ export interface ClientOpts extends LogOpts {
 export interface ServerOpts extends LogOpts {
 }
 
+export class MessageError extends Error implements JsonRpc2.Error {
+    private _code: JsonRpc2.ErrorCode;
+    private _data?: any;
+
+    constructor(error: JsonRpc2.Error) {
+        super(error.message);
+        this._code = error.code || 0;
+        this._data = error.data || null;
+    }
+
+    public get code(): JsonRpc2.ErrorCode {
+        return this._code;
+    }
+
+    public get data(): any {
+        return this._data;
+    }
+}
+
 /**
  * Creates a RPC Client.
  * It is intentional that Client does not create a WebSocket object since we prefer composability
@@ -79,7 +98,7 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
                 if (message.result) {
                     promise.resolve(message.result)
                 } else if (message.error) {
-                    promise.reject(message.error)
+                    promise.reject(new MessageError(message.error))
                 } else {
                     this.emit('error', new Error(`Response must have result or error: ${messageStr}`))
                 }
