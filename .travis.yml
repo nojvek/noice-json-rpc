@@ -3,12 +3,6 @@ language: node_js
 node_js:
     - node
 
-install:
-    - npm install
-
-before_script:
-    - cd $TRAVIS_BUILD_DIR
-
 script:
     - npm run tslint
     - npm run build
