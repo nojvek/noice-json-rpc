@@ -37,7 +37,6 @@ async function setupClient() {
         const result = await api.Profiler.stop()
 
         console.log('Result', result)
-        process.exit(0)
 
     } catch (e) {
         console.error(e)
