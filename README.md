@@ -8,66 +8,42 @@
 
 Client and Server helpers to implement a clean function based Api for Json Rpc.
 
-Noice Json Rpc takes in a websocket like object. It calls `send(msg:str)` function and expects messages to come from `on('message', handler)`. It works out of the box with WebSockets but it can also work with stdin/stdout, worker threads, iframes or any other mechanism in which strings can be sent or received. 
+Noice Json Rpc takes in a websocket like object. It calls `send(msg:str)` function and expects messages to come from `on('message', handler)`. It works out of the box with WebSockets but it can also work with stdin/stdout, worker threads, iframes or any other mechanism in which strings can be sent or received.
 
 Its only dependency is `events.EventEmitter`.
 
-Using ES6 proxies it exposes a clean client-server api. Since its written in TypeScript, the api object can be cast to work off an interface specific to the domain. e.g [chrome-remote-debug-protocol](https://github.com/nojvek/chrome-remote-debug-protocol) 
+Using ES6 proxies it exposes a clean client-server api. Since its written in TypeScript, the api object can be cast to work off an interface specific to the domain. e.g [ChromeDevTools/devtools-protocol](https://github.com/ChromeDevTools/devtools-protocol/blob/master/types/protocol.d.ts)
 
 ## [Example](tests/example.ts)
 
 ```js
 import * as WebSocket from 'ws'
-import WebSocketServer = WebSocket.Server
-import * as rpc from 'noice-json-rpc'
+import DevToolsProtocol from 'devtools-protocol'
+import * as rpc from '../lib/noice-json-rpc'
 
 async function setupClient() {
     try {
-        const api = new rpc.Client(new WebSocket("ws://localhost:8080"), {logConsole: true}).api()
+        const rpcClient = new rpc.Client(new WebSocket('ws://localhost:8080'), {logConsole: true})
+        const api: DevToolsProtocol.ProtocolApi = rpcClient.api()
 
         await Promise.all([
             api.Runtime.enable(),
-            api.Debugger.enable(),
             api.Profiler.enable(),
-            api.Runtime.run(),
         ])
 
+        await api.Runtime.run()
         await api.Profiler.start()
-        await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for event
-        await api.Profiler.stop()
+        await new Promise(resolve => api.Runtime.on('executionContextDestroyed', resolve)); // Wait for event
+        const result = await api.Profiler.stop()
+
+        console.log('Result', result)
+        process.exit(0)
 
     } catch (e) {
         console.error(e)
     }
 }
 
-function setupServer() {
-    const wssServer = new WebSocketServer({port: 8080});
-    const api = new rpc.Server(wssServer).api();
-
-    const enable = () => {}
-
-    api.Debugger.expose({enable})
-    api.Profiler.expose({enable})
-    api.Runtime.expose({
-        enable,
-        run() {}
-    })
-    api.Profiler.expose({
-        enable,
-        start() {
-            setTimeout(() => {
-                api.Runtime.emitExecutionContextDestroyed()
-            }, 1000)
-        },
-        stop() {
-            return {data: "noice!"}
-        }
-    })
-
-}
-
-setupServer()
 setupClient()
 ```
 
@@ -75,7 +51,6 @@ Output
 
 ```
 Client > {"id":1,"method":"Runtime.enable"}
-Client > {"id":2,"method":"Debugger.enable"}
 Client > {"id":3,"method":"Profiler.enable"}
 Client > {"id":4,"method":"Runtime.run"}
 Client < {"id":1,"result":{}}

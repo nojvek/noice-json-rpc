@@ -10,6 +10,8 @@ interface GameClient {
     help(params: {lives: number}): Promise<{acknowledged: boolean}>
     onLevelUp(handler: (event: {lives: number}) => void): void
     emitDying(params: {health: number}): void
+    on(name: 'levelUp', handler: (event: {lives: number}) => void): void
+    emit(name: 'dying', params: {health: number}): void
 }
 
 interface GameServer {
@@ -18,6 +20,8 @@ interface GameServer {
     }): void
     emitLevelUp(event: {lives: number}): void
     onDying(handler: (event: {health: number}) => void): void
+    emit(name: 'levelUp', event: {lives: number}): void
+    on(name: 'dying', handler: (event: {health: number}) => void): void
 }
 
 interface GameClientApi {
@@ -82,21 +86,31 @@ describe('Client', () => {
         }
     })
 
-    it('emits notifications from server', () => {
+    it('api.onXYZ() and api.on(`xyz`) handles notifications from server', () => {
         const api: GameClient = new Client(socket).api('')
         const onLevelUp = sandbox.stub()
-        api.onLevelUp(<any>onLevelUp)
         socket.emit('open')
+
+        api.onLevelUp(<any>onLevelUp)
         socket.emit('message', `{"method":"levelUp","params":{"level":2}}`)
         assertExpr(() => onLevelUp.calledWith({level: 2}))
+
+        api.on('levelUp', <any>onLevelUp)
+        socket.emit('message', `{"method":"levelUp","params":{"level":3}}`)
+        assertExpr(() => onLevelUp.calledWith({level: 3}))
     })
 
-    it('.notify() sends notifications to server', () => {
+
+    it('api.emitXYZ() and api.emit(`xyz`) sends notifications to server', () => {
         const api: GameClient = new Client(socket).api('')
         socket.emit('open')
         const send = sandbox.stub(socket, 'send')
+
         api.emitDying({health: 10})
         assertExpr(() => send.calledWith(`{"method":"dying","params":{"health":10}}`))
+
+        api.emit('dying', {health: 20})
+        assertExpr(() => send.calledWith(`{"method":"dying","params":{"health":20}}`))
     })
 
     it('emits error when recieves malformed response', () => {
@@ -195,21 +209,31 @@ describe('Server', () => {
         assert(logConsole.calledOnce, 'logEmit.calledOnce')
     })
 
-    it('.api.emitXYZ() broadcasts XYZ message ', () => {
+    it('.api.emitXYZ() and api.emit(`xyz`) broadcasts XYZ message ', () => {
         const api: GameServer = new Server(socketServer).api('')
         socketServer.clients = [ socket ]
         const send = sandbox.stub(socket, 'send')
+
         api.emitLevelUp({lives: 2})
         assertExpr(() => send.calledWith(`{"method":"levelUp","params":{"lives":2}}`))
+
+        api.emit('levelUp', {lives: 3})
+        assertExpr(() => send.calledWith(`{"method":"levelUp","params":{"lives":3}}`))
     })
 
-    it('.api.onXYZ is called when client sends a notification', () => {
+
+    it('.api.onXYZ() and api.on(`xyz`) handles notifications from client', () => {
         const api: GameServer = new Server(socketServer).api('')
         socketServer.emit('connection', socket)
         const onDying = sandbox.stub()
+
         api.onDying(<any>onDying)
         socket.emit('message', `{"method":"dying","params":{"health":2}}`)
         assertExpr(() => onDying.calledWith({health: 2}))
+
+        api.on('dying', <any>onDying)
+        socket.emit('message', `{"method":"dying","params":{"health":3}}`)
+        assertExpr(() => onDying.calledWith({health: 3}))
     })
 
     it('.api.expose can expose functions and reply to requests', async () => {

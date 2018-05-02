@@ -3,11 +3,13 @@ import * as WebSocket from 'ws'
 import WebSocketServer = WebSocket.Server
 import * as http from 'http'
 import Crdp from 'chrome-remote-debug-protocol'
+import DevToolsProtocol from 'devtools-protocol'
 import * as rpc from '../lib/noice-json-rpc'
 
 async function setupClient() {
     try {
-        const api: Crdp.CrdpClient = new rpc.Client(new WebSocket('ws://localhost:8080'), {logConsole: true}).api()
+        const rpcClient = new rpc.Client(new WebSocket('ws://localhost:8080'), {logConsole: true})
+        const api: DevToolsProtocol.ProtocolApi = rpcClient.api()
 
         await Promise.all([
             api.Runtime.enable(),
@@ -16,7 +18,7 @@ async function setupClient() {
         ])
 
         await api.Profiler.start()
-        await new Promise((resolve) => api.Runtime.onExecutionContextDestroyed(resolve)); // Wait for event
+        await new Promise((resolve) => api.Runtime.on('executionContextDestroyed', resolve)); // Wait for event
         const result = await api.Profiler.stop()
 
         console.log('Result', result)

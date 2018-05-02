@@ -183,14 +183,21 @@ export class Client extends EventEmitter implements JsonRpc2.Client {
                 // Special handling for prototype so console intellisense works on noice objects
                 if (prop === '__proto__' || prop === 'prototype') {
                     return Object.prototype
-                } else if (prefix === void 0) { // Prefix is undefined. Create domain prefix
+                } else if (prefix === undefined) { // Prefix is undefined. Create domain prefix
                     target[prop] = this.api(`${prop}.`)
-                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) {
+
+                } else if (prop === 'on') {
+                    target[prop] = (method: string, handler: Function) => this.on(`${prefix}${method}`, handler)
+                } else if (prop === 'emit') {
+                    target[prop] = (method: string, params: any) => this.notify(`${prefix}${method}`, params)
+
+                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) { // TODO: deprecate this
                     const method = prop[2].toLowerCase() + prop.substr(3)
                     target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
-                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) {
+                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) { // TODO: deprecate this
                     const method = prop[4].toLowerCase() + prop.substr(5)
                     target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
+
                 } else {
                     const method = prop
                     target[prop] = (params: any) => this.call(`${prefix}${method}`, params)
@@ -363,14 +370,21 @@ export class Server extends EventEmitter implements JsonRpc2.Server {
 
                 if (prop === '__proto__' || prop === 'prototype') {
                     return Object.prototype
-                } else if (prefix === void 0) {
+                } else if (prefix === undefined) {
                     target[prop] = this.api(`${prop}.`)
-                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) {
+
+                } else if (prop === 'on') {
+                    target[prop] = (method: string, handler: Function) => this.on(`${prefix}${method}`, handler)
+                } else if (prop === 'emit') {
+                    target[prop] = (method: string, params: any) => this.notify(`${prefix}${method}`, params)
+
+                } else if (prop.substr(0, 2) === 'on' && prop.length > 3) { // TODO deprecate this
                     const method = prop[2].toLowerCase() + prop.substr(3)
                     target[prop] = (handler: Function) => this.on(`${prefix}${method}`, handler)
-                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) {
+                } else if (prop.substr(0, 4) === 'emit' && prop.length > 5) { // TODO deprecate this
                     const method = prop[4].toLowerCase() + prop.substr(5)
                     target[prop] = (params: any) => this.notify(`${prefix}${method}`, params)
+
                 } else if (prop === 'expose') {
                     target[prop] = (module: any) => {
                         if (!module || typeof module !== 'object') {

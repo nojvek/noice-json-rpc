@@ -238,6 +238,10 @@ delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
 
+devtools-protocol@0.0.555290:
+  version "0.0.555290"
+  resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.555290.tgz#0bfb3d0373f9004e3de97dfd034b06a623ad917c"
+
 diff@1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-1.4.0.tgz#7f28d2eb9ee7b15a97efd89ce63dcfdaa3ccbabf"
